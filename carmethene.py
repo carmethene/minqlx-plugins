@@ -1,6 +1,6 @@
 import minqlx
 
-class votes(minqlx.Plugin):
+class carmethene(minqlx.Plugin):
     def __init__(self):
         self.add_hook("new_game", self.handle_new_game)
         self.add_command("votequestion", self.cmd_vote_question, usage="<question>", client_cmd_perm=5)
