@@ -26,6 +26,7 @@ import time
 import re
 import os
 
+from random import randint
 from collections import deque
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -58,6 +59,8 @@ class essentials(minqlx.Plugin):
         self.add_command(("kickban", "tempban"), self.cmd_kickban, 2, usage="<id>")
         self.add_command("yes", self.cmd_yes, 2)
         self.add_command("no", self.cmd_no, 2)
+        self.add_command("random", self.cmd_random, 1, usage="<limit>")
+        self.add_command("cointoss", self.cmd_cointoss, 1)
         self.add_command("switch", self.cmd_switch, 1, usage="<id> <id>")
         self.add_command("red", self.cmd_red, 1, usage="<id>")
         self.add_command("blue", self.cmd_blue, 1, usage="<id>")
@@ -419,6 +422,24 @@ class essentials(minqlx.Plugin):
         else:
             channel.reply("There is no active vote!")
 
+    def cmd_random(self, player, msg, channel):
+        """Presents a random number in chat."""
+        if len(msg) < 2:
+            return minqlx.RET_USAGE
+        
+        try:
+            n = randint(1,int(msg[1]))
+        except ValueError:
+            player.tell("Invalid upper limit. Use a positive integer.")
+            return minqlx.RET_STOP_ALL
+        
+        channel.reply("^3Random number is: ^5{}".format(n))
+        
+    def cmd_cointoss(self, player, msg, channel):
+        """Tosses a coin, and returns HEADS or TAILS in chat."""
+        n = randint(0,1)
+        channel.reply("^3The coin is: ^5{}".format("HEADS" if n else "TAILS"))
+        
     def cmd_switch(self, player, msg, channel):
         """Switches the teams of the two players."""
         if len(msg) < 3:
