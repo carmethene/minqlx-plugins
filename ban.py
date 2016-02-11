@@ -82,7 +82,7 @@ class ban(minqlx.Plugin):
     def handle_player_disconnect(self, player, reason):
         # Allow people to disconnect without getting a leave if teams are uneven.
         teams = self.teams()
-        if len(teams["red"] + teams["blue"]) % 2 == 0 and player in self.players_start:
+        if len(teams["red"] + teams["blue"]) % 2 != 0 and player in self.players_start:
             self.players_start.remove(player)
 
     def handle_game_countdown(self):
@@ -311,7 +311,11 @@ class ban(minqlx.Plugin):
             channel.reply("I do not know ^6{}^7.".format(name))
             return
         
-        leaves = int(self.db[base_key + ":games_left"])
+        try:
+            leaves = int(self.db[base_key + ":games_left"])
+        except KeyError:
+            leaves = 0
+        
         if leaves <= 0:
             channel.reply("^6{}^7's leaves are already at ^6{}^7.".format(name, leaves))
             return
@@ -359,13 +363,14 @@ class ban(minqlx.Plugin):
         if not self.get_cvar("qlx_leaverBan", bool):
             return None
 
-        completed = self.db[PLAYER_KEY.format(steam_id) + ":games_completed"]
-        left = self.db[PLAYER_KEY.format(steam_id) + ":games_left"]
-        if completed is None or left is None:
+        try:
+            completed = self.db[PLAYER_KEY.format(steam_id) + ":games_completed"]
+            left = self.db[PLAYER_KEY.format(steam_id) + ":games_left"]
+        except KeyError:
             return None
-        else:
-            completed = int(completed)
-            left = int(left)
+        
+        completed = int(completed)
+        left = int(left)
 
         min_games_completed = self.get_cvar("qlx_leaverBanMinimumGames", int)
         warn_threshold = self.get_cvar("qlx_leaverBanWarnThreshold", float)
@@ -389,7 +394,7 @@ class ban(minqlx.Plugin):
         else:
             action = None
 
-        return action, ratio
+        return action, completed / total
 
     def warn_player(self, player, ratio):
         player.tell("^7You have only completed ^6{}^7 percent of your games.".format(round(ratio * 100, 1)))
